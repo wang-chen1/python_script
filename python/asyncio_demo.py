@@ -2,17 +2,17 @@ import asyncio
 import time
 
 async def test1() -> None:
-    print(1)
+    print(1, time.asctime())
     await asyncio.sleep(1)
 
 async def test2() -> str:
-    print(2)
-    await asyncio.sleep(2)
+    print(2, time.asctime())
+    await asyncio.sleep(1)
     return "qwe"
 
 async def test3() -> dict:
-    print(3)
-    await asyncio.sleep(3)
+    print(3, time.asctime())
+    await asyncio.sleep(1)
     return {"aa": 11}
 
 async def run1() -> None:
@@ -38,11 +38,20 @@ async def run3() -> None:
     task3 = asyncio.create_task(test3())
     print(f"started at {time.strftime('%X')}")
     task_result1 = await task1
+    time.sleep(1)
     task_result2 = await task2
+    time.sleep(1)
     task_result3 = await task3
     print(f"started at {time.strftime('%X')}")
     print(task_result1, task_result2, task_result3)
 
-asyncio.run(run1())
-# asyncio.run(run2())
-# asyncio.run(run3())
+asyncio_module = input("请输入创建协程方式（a,b,c）: ")
+match asyncio_module:
+    case "a":
+        asyncio.run(run1())
+    case "b":
+        asyncio.run(run2())
+    case "c":
+        asyncio.run(run3())
+    case _:
+        print("暂无")
