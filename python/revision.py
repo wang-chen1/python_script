@@ -6,9 +6,9 @@ import xml.etree.ElementTree as ET
 def delete_directory(directory_path):
     try:
         shutil.rmtree(directory_path)
-        print(f"目录 {directory_path} 已成功删除。")
+        print(f"dir {directory_path} delete success.")
     except OSError as e:
-        print(f"删除目录 {directory_path} 时出错: {e}")
+        print(f"deleteing {directory_path} error: {e}")
 
 def manage_directory(directory_path):
     # 判断目录是否存在
@@ -56,13 +56,13 @@ def string_to_dict(input_string):
 
 def main():
     github_base_url = "git@github.com:"
-    branch = "v0.0.0.163"
+    branch = "v0.0.0.213"
     sdk_name = "sdk.git"
     sdk_ucc_name = "sdk-ucc.git"
     public_url_prefix = "syna-astra-test/"
     public_test_prefix = "syna-astra-test/"
     stage_prefix = "syna-astra-stage/"
-    ci_snapshot_file_file = "snapshot_syna-sdk-sirius_202501162218.xml"
+    ci_snapshot_file_file = "snapshot_syna-sdk-sirius_202503261618.xml"
     xml_dict = {}
     git_dict = {
         "sdk":{
