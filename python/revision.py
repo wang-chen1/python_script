@@ -5,8 +5,10 @@ import xml.etree.ElementTree as ET
 import glob
 import urllib.request
 import logging
+import sys
 
 def init_snapshot_manifest(url):
+    function_name = sys._getframe().f_code.co_name
     # 获取当前目录下所有 .xml 文件
     xml_files = glob.glob("*.xml")
 
@@ -14,39 +16,41 @@ def init_snapshot_manifest(url):
     for xml_file in xml_files:
         try:
             os.remove(xml_file)
-            print(f"已删除文件: {xml_file}")
+            logging.info(f"[{function_name}]已删除文件: {xml_file}")
         except OSError as e:
-            print(f"删除文件失败 {xml_file}: {e}")
+            logging.info(f"[{function_name}]删除文件失败 {xml_file}: {e}")
 
     try:
         filename = url.split('/')[-1]
         save_path = os.path.join(os.getcwd(), filename)
-        print(save_path)
-        print(f"正在下载: {url} -> {save_path}")
+        logging.info(save_path)
+        logging.info(f"[{function_name}] donwloading: {url} -> {save_path}")
         urllib.request.urlretrieve(url, save_path)
-        print(f"✅ 文件已下载到: {save_path}")
+        logging.info(f"[{function_name}] ✅ file have been downloaded to: {save_path}")
     except Exception as e:
-        print(f"❌ 下载失败: {e}")
+        logging.info(f"[{function_name}] ❌ download failed: {e}")
 
 
 def delete_directory(directory_path):
+    function_name = sys._getframe().f_code.co_name
     try:
         shutil.rmtree(directory_path)
-        print(f"dir {directory_path} delete success.")
+        logging.info(f"[{function_name}]dir {directory_path} delete success.")
     except OSError as e:
-        print(f"deleteing {directory_path} error: {e}")
+        logging.error(f"[{function_name}]deleteing {directory_path} error: {e}")
 
 def manage_directory(directory_path):
+    function_name = sys._getframe().f_code.co_name
     # 判断目录是否存在
     if os.path.exists(directory_path):
-        print(f"目录 {directory_path} 已存在。")
+        logging.info(f"[{function_name}]目录 {directory_path} 已存在。")
     else:
         try:
             # 创建目录
             os.makedirs(directory_path)
-            print(f"目录 {directory_path} 创建成功。")
+            logging.info(f"[{function_name}]目录 {directory_path} 创建成功。")
         except OSError as e:
-            print(f"创建目录 {directory_path} 失败，错误信息：{e}")
+            logging.error(f"[{function_name}]创建目录 {directory_path} 失败，错误信息：{e}")
 
 
 def clone_repo(repo_url, branch_name, github_path):
@@ -58,6 +62,7 @@ def get_submodule_revision(submodule_path):
 
 
 def parse_xml_from_file_etree(file_path, res_dict):
+    function_name = sys._getframe().f_code.co_name
     difference = False
     tree = ET.parse(file_path)
     root = tree.getroot()
@@ -66,9 +71,9 @@ def parse_xml_from_file_etree(file_path, res_dict):
             if child.attrib.get("path") in res_dict:
                 if child.attrib.get("revision") != res_dict.get(child.attrib.get("path")):
                     difference = True
-                    print("difference path:", child.attrib.get("path"))
+                    logging.info("difference path:", child.attrib.get("path"))
     if difference is False:
-        print("[parse_xml_from_file_etree] comparison results are consistent")
+        logging.info(f"[{function_name}] comparison results are consistent")
 
 
 def string_to_dict(input_string):
@@ -84,16 +89,17 @@ def string_to_dict(input_string):
     return result
 
 
-def main():
+def main(ci_snapshot_file_url, branch_name):
+    function_name = sys._getframe().f_code.co_name
     github_base_url = "git@github.com:"
-    branch_name = "kirkstone_5.15_v1.7.0.50"
+    # branch_name = "kirkstone_5.15_v1.7.0.50"
     sdk_name = "sdk.git"
     sdk_ucc_name = "sdk-ucc.git"
     public_url_prefix = "synaptics-astra/"
     public_test_prefix = "syna-astra-test/"
     stage_prefix = "syna-astra-stage/"
     res_dict = {}
-    ci_snapshot_file_url = 'http://iotmmswfileserver.synaptics.com:8000/sandal/Firebird/202508/20250811/202508112018/snapshot_syna-sdk-sirius_202508112018.xml'
+    # ci_snapshot_file_url = 'http://iotmmswfileserver.synaptics.com:8000/sandal/Firebird/202508/20250811/202508112018/snapshot_syna-sdk-sirius_202508112018.xml'
     ci_snapshot_file_file = ci_snapshot_file_url.split('/')[-1]
     git_dict = {
         "sdk":{
@@ -117,20 +123,22 @@ def main():
             manage_directory(github_path)
             result = clone_repo(repo_url, branch_name, github_path)
             if result.returncode == 128:
-                print(f"{repo_url} continue")
+                logging.info(f"[{function_name}]{repo_url} continue")
                 continue
             _submodules = get_submodule_revision(os.path.join(github_path, k))
             _submodules = _submodules.stdout
             if _submodules:
                 if submodules != "" and submodules != _submodules:
-                    print("path", os.path.join(github_path, k))
+                    logging.info("path", os.path.join(github_path, k))
                 submodules = _submodules
     res_dict = string_to_dict(submodules)
-    print(f"res_dict {res_dict}")
+    logging.info(f"[{function_name}]res_dict {res_dict}")
     init_snapshot_manifest(ci_snapshot_file_url)
 
     if len(res_dict) != 0:
         parse_xml_from_file_etree(ci_snapshot_file_file, res_dict)
 
 if __name__ == "__main__":
-    main()
+    ci_snapshot_file_url = input("input ci_snapshot_file_url: ")
+    branch_name = input("input branch_name: ")
+    main(ci_snapshot_file_url, branch_name)
