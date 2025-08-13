@@ -41,14 +41,30 @@ def getitem():
     print('data["aaa"]', data["aaa"])
     print('data["id"]', data["id"])
 
+def match_demo():
+    point = (2, 0)
+    match point:
+        case (0, 0):
+            print("Origin")
+        case (x, 0):
+            print(f"On the x-axis at x={x}")
+        case (0, y):
+            print(f"On the y-axis at y={y}")
+        case (x, y):
+            print(f"Coordinates: x={x}, y={y}")
+        case _:
+            print("This should never happen")
 
-param = input("input: ")
 
+if __name__ == "__main__":
+    param = input("input: ")
 
-match param:
-    case "enter":
-        enter()
-    case "getitem":
-        getitem()
-    case _:
-        pass
+    match param:
+        case "enter":
+            enter()
+        case "getitem":
+            getitem()
+        case "match_demo":
+            match_demo()
+        case _:
+            pass

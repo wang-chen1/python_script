@@ -2,6 +2,32 @@ import subprocess
 import os
 import shutil
 import xml.etree.ElementTree as ET
+import glob
+import urllib.request
+import logging
+
+def init_snapshot_manifest(url):
+    # 获取当前目录下所有 .xml 文件
+    xml_files = glob.glob("*.xml")
+
+    # 遍历并删除每一个文件
+    for xml_file in xml_files:
+        try:
+            os.remove(xml_file)
+            print(f"已删除文件: {xml_file}")
+        except OSError as e:
+            print(f"删除文件失败 {xml_file}: {e}")
+
+    try:
+        filename = url.split('/')[-1]
+        save_path = os.path.join(os.getcwd(), filename)
+        print(save_path)
+        print(f"正在下载: {url} -> {save_path}")
+        urllib.request.urlretrieve(url, save_path)
+        print(f"✅ 文件已下载到: {save_path}")
+    except Exception as e:
+        print(f"❌ 下载失败: {e}")
+
 
 def delete_directory(directory_path):
     try:
@@ -23,22 +49,26 @@ def manage_directory(directory_path):
             print(f"创建目录 {directory_path} 失败，错误信息：{e}")
 
 
-def clone_repo(repo_url, branch, github_path):
-    subprocess.run(["git", "clone", repo_url, '-b', branch], cwd=github_path)
-
+def clone_repo(repo_url, branch_name, github_path):
+    result = subprocess.run(["git", "clone", repo_url, '-b', branch_name], cwd=github_path)
+    return result
 
 def get_submodule_revision(submodule_path):
     return subprocess.run(["git", "submodule", "status"], cwd=submodule_path, text=True, capture_output=True)
 
 
 def parse_xml_from_file_etree(file_path, res_dict):
+    difference = False
     tree = ET.parse(file_path)
     root = tree.getroot()
     for child in root:
         if child.tag == "project":
             if child.attrib.get("path") in res_dict:
                 if child.attrib.get("revision") != res_dict.get(child.attrib.get("path")):
+                    difference = True
                     print("difference path:", child.attrib.get("path"))
+    if difference is False:
+        print("[parse_xml_from_file_etree] comparison results are consistent")
 
 
 def string_to_dict(input_string):
@@ -56,22 +86,23 @@ def string_to_dict(input_string):
 
 def main():
     github_base_url = "git@github.com:"
-    branch = "v0.0.0.213"
+    branch_name = "kirkstone_5.15_v1.7.0.50"
     sdk_name = "sdk.git"
     sdk_ucc_name = "sdk-ucc.git"
-    public_url_prefix = "syna-astra-test/"
+    public_url_prefix = "synaptics-astra/"
     public_test_prefix = "syna-astra-test/"
     stage_prefix = "syna-astra-stage/"
-    ci_snapshot_file_file = "snapshot_syna-sdk-sirius_202503261618.xml"
-    xml_dict = {}
+    res_dict = {}
+    ci_snapshot_file_url = 'http://iotmmswfileserver.synaptics.com:8000/sandal/Firebird/202508/20250811/202508112018/snapshot_syna-sdk-sirius_202508112018.xml'
+    ci_snapshot_file_file = ci_snapshot_file_url.split('/')[-1]
     git_dict = {
         "sdk":{
-            # "public" : github_base_url+public_url_prefix+sdk_name,
+            "public" : github_base_url+public_url_prefix+sdk_name,
             "public-test" : github_base_url+public_test_prefix+sdk_name,
             "stage" : github_base_url+stage_prefix+sdk_name,
         },
         "sdk-ucc":{
-            # "public" : github_base_url+public_url_prefix+sdk_ucc_name,
+            "public" : github_base_url+public_url_prefix+sdk_ucc_name,
             "public-test" : github_base_url+public_test_prefix+sdk_ucc_name,
             "stage" : github_base_url+stage_prefix+sdk_ucc_name,
         }
@@ -82,19 +113,24 @@ def main():
         delete_directory(k)
         manage_directory(k)
         for github, repo_url in v.items():
-            # print(repo_url)
             github_path = os.path.join(k, github)
             manage_directory(github_path)
-            clone_repo(repo_url, branch, github_path)
+            result = clone_repo(repo_url, branch_name, github_path)
+            if result.returncode == 128:
+                print(f"{repo_url} continue")
+                continue
             _submodules = get_submodule_revision(os.path.join(github_path, k))
             _submodules = _submodules.stdout
             if _submodules:
                 if submodules != "" and submodules != _submodules:
                     print("path", os.path.join(github_path, k))
                 submodules = _submodules
-
     res_dict = string_to_dict(submodules)
-    parse_xml_from_file_etree(ci_snapshot_file_file, res_dict)
+    print(f"res_dict {res_dict}")
+    init_snapshot_manifest(ci_snapshot_file_url)
+
+    if len(res_dict) != 0:
+        parse_xml_from_file_etree(ci_snapshot_file_file, res_dict)
 
 if __name__ == "__main__":
     main()

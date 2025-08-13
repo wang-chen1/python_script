@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote fetch="ssh://sjc1uvp-code01/.vol/yocto-kirkstone-mirror" name="github"/>
+  <remote fetch="ssh://sjc1uvp-code01/.vol/yocto-kirkstone-mirror" name="qt"/>
+  <remote fetch="../.." name="scgerrit" review="http://sc-debu-git.synaptics.com/gerrit"/>
+  <remote fetch="ssh://sjc1uvp-code01/.vol/yocto-kirkstone-mirror" name="yocto"/>
+  
+  <default remote="scgerrit" revision="rel_branch/firebird/202310041658"/>
+  
+  <project name="OSSystems/meta-browser" path="meta-browser" remote="github" revision="01eca11a006d1e84f9370f9a094104e3ee72a848"/>
+  <project groups="vendor,synasdk,sirius" name="by-projects/yocto-rdk/meta-synaptics" path="meta-synaptics" revision="dd7f07a57bcf893c3fe6af343ddbd9e9da59f58b" upstream="rel_branch/firebird/master"/>
+  <project groups="vendor,synasdk,sirius" name="by-projects/yocto-rdk/meta-synaptics-private" path="meta-synaptics-private" revision="887f64e558c9b7c12274d404d76511dd7003f770" upstream="rel_branch/firebird/202310041658"/>
+  <project groups="vendor,synasdk,sirius" name="by-projects/yocto-rdk/meta-synaptics-voip" path="meta-synaptics-voip" revision="0f26423017a98d5dc2aab980302386fb91810605" upstream="rel_branch/firebird/202310041658"/>
+  <project name="kraj/meta-clang" path="meta-clang" remote="github" revision="4711dd7d3e0b072e40d04aa3f75f7c1ca38e1ff8"/>
+  <project name="meta-lts-mixins.git" path="meta-lts-mixins" remote="yocto" revision="9bc06b6a761f28cf82aae8a99afe27ed5e2ce4c9"/>
+  <project name="meta-virtualization.git" path="meta-virtualization" remote="yocto" revision="a055d7dcafc58855081a5eac9a46b93b9b51012b"/>
+  <project name="openembedded/meta-openembedded.git" path="meta-openembedded" remote="github" revision="8bb16533532b6abc2eded7d9961ab2a108fd7a5b"/>
+  <project name="poky.git" path="poky" remote="yocto" revision="1e0d58c53b7d9c3feb631e46666ae7a3e3614253"/>
+  <project name="sbabic/meta-swupdate.git" path="meta-swupdate" remote="github" revision="6918be849ddf1fed5b7a0173e51c7a136e8d4101"/>
+  <project name="yocto/meta-qt5.git" path="meta-qt5" remote="qt" revision="644ebf220245bdc06e7696ccc90acc97a0dd2566"/>
+</manifest>
